@@ -76,42 +76,59 @@ class WalkthroughPoller:
             
             # When the new step count is larger than the current step number, 
             # reset the current step number to the last step
+            if len(self.current_walkthrough.steps)  != self.walkthrough_steps[self.current_walkthrough_title]["total"]:
+                # Right now there is a dictionary called walkthrough_steps that maintains some but not all of the state of various walkthrough. 
+                #This state information is loaded from walkthrough.csv via load_state
+                # This is entirely different from how the actual walkthroughs are loaded.
+                # The thing is When you add steps or make changes to a walkthrough,And are in development mode, The reload triggered will reload the walkthrough but will not update walkthrough.CSV.
+                # Right now what this means is that the totals in walkthrough CSV can be wrong 
+                # This is an attempt to correct the walkthrough_steps so that the length of the walkthrough accurately reflects its actual length, and to keep walkthrough.csv properly synchronized with the actual length of the current walkthrough of that name.
+                self.walkthrough_steps[self.current_walkthrough_title]["total"] = len(self.current_walkthrough.steps)
+
             if self.current_stepnumber >= len(self.current_walkthrough.steps):
                 self.current_stepnumber = len(self.current_walkthrough.steps) - 1
-                
+            # This updates walkthrough.csv with any state changes.
+            self.persist_walkthrough_steps(self.walkthrough_steps)
             if len(self.current_walkthrough.steps) == 0:
                 self.end_walkthrough()
             else:
                 self.display_step_based_on_context(True)
     
     def load_state(self):
+        global initial_walkthrough_title
         if not os.path.exists(walkthrough_file_location):
             self.persist_walkthrough_steps(self.walkthrough_steps)
 
         fh = open(walkthrough_file_location, "r")
         lines = fh.readlines()
         fh.close()
-        
+
         walkthrough_steps = {}
         for index,line in enumerate(lines):
             split_line = line.strip("\n").split(",")
             key = split_line[0]
+            if index == 0:
+                # I have made changes to persist_walkthrough_steps so that walkthroughs are saved in the order that you last used them. therefore any walkthrough will reopen to the last walkthrough you used. otherwise it will default to the talon head up display introductory tutorial
+                initial_walkthrough_title = key
             current_step = split_line[1]
             total_step = split_line[2]
             walkthrough_steps[key] = {"current": int(current_step), "total": int(total_step), "progress": int(current_step) / int(total_step) if int(total_step) > 0 else 0}
         self.walkthrough_steps = walkthrough_steps
         
         # For the initial loading, start the walkthrough if it hasn"t been completed fully yet
-        if initial_walkthrough_title not in self.walkthrough_steps or \
-            self.walkthrough_steps[initial_walkthrough_title]["current"] < self.walkthrough_steps[initial_walkthrough_title]["total"]:
-            cron.after("1s", self.start_up_hud)
+        cron.after("1s", self.start_up_hud)
 
     def persist_walkthrough_steps(self, steps):
         handle = open(walkthrough_file_location, "w")    
     
         walkthrough_items = []
+        # These lines are what allows Walkthrough.csv to be saved in the order of your last used walkthrough on top 
+        key = self.current_walkthrough_title
+        walkthrough_items.append(str(key) + "," + str(steps[key]["current"]) + "," + str(steps[key]["total"]))
+        
         for key in steps.keys():
-            walkthrough_items.append(str(key) + "," + str(steps[key]["current"]) + "," + str(steps[key]["total"]))
+            if str(key) != self.current_walkthrough_title:
+                walkthrough_items.append(str(key) + "," + str(steps[key]["current"]) + "," + str(steps[key]["total"]))
         
         if len(walkthrough_items) > 0:
             handle.write("\n".join(walkthrough_items))
@@ -202,6 +219,15 @@ class WalkthroughPoller:
                 self.lazy_load_walkthrough(walkthrough_title)
             
             self.current_walkthrough = self.walkthroughs[walkthrough_title]
+            
+            # # this kind of sort of fixes the problem where
+            # you are trying to get to a step number that is bigger than the total number of steps in the walkthrough.
+            if walkthrough_title in self.walkthrough_steps:
+
+                if self.walkthrough_steps[walkthrough_title]["current"] < self.walkthrough_steps[walkthrough_title]["total"] - 1:
+                    self.current_stepnumber = self.walkthrough_steps[walkthrough_title]["current"] - 1
+                else:
+                    self.current_stepnumber = self.walkthrough_steps[walkthrough_title]["total"] - 2
             for index, step in enumerate(self.current_walkthrough.steps):
                 step.progress = HudContentPage(index, len(self.current_walkthrough.steps), 100 * (index / len(self.current_walkthrough.steps)))
                 self.current_walkthrough.steps[index] = step
@@ -210,9 +236,9 @@ class WalkthroughPoller:
             if self.development_mode:
                 self.watch_walkthrough_file(True)
             
-            if walkthrough_title in self.walkthrough_steps:
+            # if walkthrough_title in self.walkthrough_steps:
                 # Always start a walkthrough over so there is less chance of inconsistent state
-                self.current_stepnumber = -1
+                # self.current_step_number = -1
             self.next_step()
 
     def next_step_or_page(self):
@@ -238,7 +264,7 @@ class WalkthroughPoller:
             
             self.persist_walkthrough_steps(self.walkthrough_steps)
             self.current_words = []
-            
+
             if self.current_stepnumber + 1 < len(self.current_walkthrough.steps):
                 self.transition_to_step(self.current_stepnumber + 1)
                 self.walkthrough_steps[self.current_walkthrough.title]["current"] = self.current_stepnumber
@@ -381,7 +407,8 @@ hud_directory = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def load_walkthrough():
     global hud_walkthrough
-    actions.user.hud_add_walkthrough("Head up display", hud_directory + "/docs/hud_walkthrough.json")
+    # commented out this line because initial walkthrough is hard coated online eleven.
+    #actions.user.hud_add_walkthrough("Head up display", hud_directory + "/docs/hud_walkthrough.json")
     actions.user.hud_add_poller("walkthrough_step", hud_walkthrough)
     hud_walkthrough.load_state()
 
