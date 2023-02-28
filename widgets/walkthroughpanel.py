@@ -49,7 +49,8 @@ class HeadUpWalkthroughPanel(LayoutWidget):
     buttons = [
         HudButton("next_icon", "Skip this step", ui.Rect(0,0,0,0), lambda widget: actions.user.hud_skip_walkthrough_step()),
         HudButton("check_icon", "Mark as done", ui.Rect(0,0,0,0), lambda widget: actions.user.hud_skip_walkthrough_all()),
-        HudButton("", "Restore current step", ui.Rect(0,0,0,0), lambda widget: actions.user.hud_restore_walkthrough_step())        
+        HudButton("", "Restore current step", ui.Rect(0,0,0,0), lambda widget: actions.user.hud_restore_walkthrough_step()),
+        HudButton("", "Return to beginning", ui.Rect(0,0,0,0), lambda widget: actions.user.hud_skip_to_walkthrough_step(0))                
     ]
 
     walkthrough_button_hovered = -1

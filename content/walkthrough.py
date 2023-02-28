@@ -437,6 +437,12 @@ class Actions:
         global hud_walkthrough
         hud_walkthrough.restore_walkthrough_step()
         
+    def hud_skip_to_walkthrough_step(stepnumber: int):
+        """Skips directly to a specific walk through step."""
+        global hud_walkthrough
+        hud_walkthrough.transition_to_step(stepnumber)
+        
+
     def hud_watch_walkthrough_files():
         """Enable watching for changes in the walkthrough files for quicker development"""
         global hud_walkthrough
