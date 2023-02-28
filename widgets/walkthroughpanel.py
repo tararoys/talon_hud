@@ -412,11 +412,11 @@ class HeadUpWalkthroughPanel(LayoutWidget):
             growth = growth if current_walkthrough_step.progress.percent > self.previous_progress.percent else growth * -1
             
             # Draw the progress bar
-            progress = ( self.previous_progress.percent + ( growth * (abs(current_walkthrough_step.progress.percent - self.previous_progress.percent))) ) * 0.01
-            paint.color = self.theme.get_colour("spoken_voice_command_background_colour", "6CC653")
-            rect = ui.Rect(background_rect.x + progress_bar_offset, background_rect.y, \
-                min(background_rect.width - progress_bar_offset * 2, (background_rect.width - progress_bar_offset * 2) * progress), progress_bar_height)
-            canvas.draw_rect(rect)
+            # progress = ( self.previous_progress.percent + ( growth * (abs(current_walkthrough_step.progress.percent - self.previous_progress.percent))) ) * 0.01
+            # paint.color = self.theme.get_colour("spoken_voice_command_background_colour", "6CC653")
+            # rect = ui.Rect(background_rect.x + progress_bar_offset, background_rect.y, \
+            #    min(background_rect.width - progress_bar_offset * 2, (background_rect.width - progress_bar_offset * 2) * progress), progress_bar_height)
+            # canvas.draw_rect(rect)
             
             self.draw_header_buttons(canvas, paint, background_rect)
         else:
@@ -435,10 +435,10 @@ class HeadUpWalkthroughPanel(LayoutWidget):
                 paint.stroke_width = 1
             
             # Draw the progress bar
-            paint.color = self.theme.get_colour("spoken_voice_command_background_colour", "6CC653")
-            rect = ui.Rect(dimensions["rect"].x + progress_bar_offset, dimensions["rect"].y, \
-                min(dimensions["rect"].width - progress_bar_offset * 2, (dimensions["rect"].width  - progress_bar_offset * 2) * ( current_walkthrough_step.progress.percent * 0.01 )), progress_bar_height)
-            canvas.draw_rect(rect)
+            # paint.color = self.theme.get_colour("spoken_voice_command_background_colour", "6CC653")
+            # rect = ui.Rect(dimensions["rect"].x + progress_bar_offset, dimensions["rect"].y, \
+            #    min(dimensions["rect"].width - progress_bar_offset * 2, (dimensions["rect"].width  - progress_bar_offset * 2) * ( current_walkthrough_step.progress.percent * 0.01 )), progress_bar_height)
+            # canvas.draw_rect(rect)
                     
             paint.color = self.theme.get_colour("text_colour")
             
