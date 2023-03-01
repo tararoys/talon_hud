@@ -398,7 +398,7 @@ class WalkthroughPoller:
                         if said_word in voice_commands_remaining:
                             voice_commands_remaining.remove(said_word)
                     
-                    if len(step.voice_commands) > 0 and len(voice_commands_remaining) == 0 and not "skip step" in step.voice_commands and not "continue" in step.voice_commands:
+                    if len(step.voice_commands) > 0 and len(voice_commands_remaining) == 0 and not "skip step" in step.voice_commands and not "continue" in step.voice_commands and not self.development_mode:
                         cron.cancel(self.next_step_job)
                         self.next_step_job = cron.after("1500ms", self.next_step)
     
